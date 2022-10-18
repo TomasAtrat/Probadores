@@ -1,4 +1,4 @@
-package com.smartstore.probadores;
+package com.smartstore.probadores.ui;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;

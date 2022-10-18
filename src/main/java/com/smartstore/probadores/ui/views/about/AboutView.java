@@ -1,8 +1,8 @@
-package com.smartstore.probadores.views.about;
+package com.smartstore.probadores.ui.views.about;
 
 
-import com.smartstore.probadores.views.MainLayout;
-import com.smartstore.probadores.views.about.ServiceHealth.Status;
+import com.smartstore.probadores.ui.views.MainLayout;
+import com.smartstore.probadores.ui.views.about.ServiceHealth.Status;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.charts.Chart;

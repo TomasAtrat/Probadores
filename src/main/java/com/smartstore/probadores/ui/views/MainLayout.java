@@ -1,8 +1,8 @@
-package com.smartstore.probadores.views;
+package com.smartstore.probadores.ui.views;
 
 
-import com.smartstore.probadores.views.about.AboutView;
-import com.smartstore.probadores.views.sistemadeprobadores.SistemadeprobadoresView;
+import com.smartstore.probadores.ui.views.about.AboutView;
+import com.smartstore.probadores.ui.views.sistemadeprobadores.SistemadeprobadoresView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.dependency.NpmPackage;

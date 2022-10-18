@@ -1,4 +1,4 @@
-package com.smartstore.probadores.views.about;
+package com.smartstore.probadores.ui.views.about;
 
 /**
  * Simple DTO class for the inbox list to demonstrate complex object data

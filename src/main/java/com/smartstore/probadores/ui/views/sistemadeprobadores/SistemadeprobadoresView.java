@@ -1,8 +1,11 @@
-package com.smartstore.probadores.views.sistemadeprobadores;
+package com.smartstore.probadores.ui.views.sistemadeprobadores;
 
-import com.smartstore.probadores.views.MainLayout;
+import com.smartstore.probadores.ui.backend.data.entity.Product;
+import com.smartstore.probadores.ui.backend.microservices.product.services.ProductService;
+import com.smartstore.probadores.ui.views.MainLayout;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -18,7 +21,8 @@ public class SistemadeprobadoresView extends HorizontalLayout {
     private TextField name;
     private Button sayHello;
 
-    public SistemadeprobadoresView() {
+    public SistemadeprobadoresView(ProductService productService) {
+
         name = new TextField("Your name");
         sayHello = new Button("Say hello");
         sayHello.addClickListener(e -> {
