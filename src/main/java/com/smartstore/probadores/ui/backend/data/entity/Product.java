@@ -1,26 +1,29 @@
 package com.smartstore.probadores.ui.backend.data.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "product")
 public class Product {
+
+    @Column(name = "id", nullable = false)
+    private int id;
+
     @Id
     @Column(name = "code", nullable = false)
-    private String id;
+    private String code;
 
     @Column(name = "description")
     private String description;
 
-    @Column(name = "category")
-    private String category;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_id")
+    private Category categoryId;
 
-    @Column(name = "model")
-    private String model;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "model_id")
+    private Model modelId;
 
     @Column(name = "brand")
     private String brand;
@@ -28,7 +31,8 @@ public class Product {
     @Column(name = "price", precision = 10)
     private BigDecimal price;
 
-    @Column(name = "picture")
+    @Lob
+    @Column(name = "picture", nullable = false, length=100000)
     private byte[] picture;
 
     @Column(name = "min_quantity")
@@ -38,11 +42,11 @@ public class Product {
     private Integer resupplyQuantity;
 
     public String getId() {
-        return id;
+        return code;
     }
 
     public void setId(String id) {
-        this.id = id;
+        this.code = id;
     }
 
     public String getDescription() {
@@ -53,20 +57,20 @@ public class Product {
         this.description = description;
     }
 
-    public String getCategory() {
-        return category;
+    public Model getModelId() {
+        return modelId;
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void setModelId(Model modelId) {
+        this.modelId = modelId;
     }
 
-    public String getModel() {
-        return model;
+    public Category getCategoryId() {
+        return categoryId;
     }
 
-    public void setModel(String model) {
-        this.model = model;
+    public void setCategoryId(Category categoryId) {
+        this.categoryId = categoryId;
     }
 
     public String getBrand() {
