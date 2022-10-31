@@ -1,33 +1,29 @@
 package com.smartstore.probadores.ui.views.sistemadeprobadores;
 
 import com.smartstore.probadores.ui.backend.data.entity.Product;
+import com.smartstore.probadores.ui.backend.data.entity.ReaderAntennaInBranch;
 import com.smartstore.probadores.ui.backend.microservices.product.services.ProductService;
 import com.smartstore.probadores.ui.views.MainLayout;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
-import org.datavec.api.records.reader.RecordReader;
-import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
-import org.datavec.api.split.FileSplit;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
-import weka.classifiers.functions.*;
+import weka.classifiers.functions.SimpleLinearRegression;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -38,16 +34,18 @@ import java.util.List;
 
 @PageTitle("Sistema de probadores")
 @Route(value = "hello", layout = MainLayout.class)
+/*
 @RouteAlias(value = "", layout = MainLayout.class)
-public class SistemadeprobadoresView extends HorizontalLayout {
+*/
+public class SistemadeprobadoresView extends HorizontalLayout /*implements HasUrlParameter */{
 
     private TextField name;
     private Button sayHello;
 
+    private ReaderAntennaInBranch readerAntennaInBranch;
     private ProductService productService;
 
     public SistemadeprobadoresView(ProductService productService) throws Exception {
-
         this.productService = productService;
 
         VerticalLayout mainLayout = new VerticalLayout();
@@ -174,6 +172,12 @@ public class SistemadeprobadoresView extends HorizontalLayout {
         instance.setValue(suggestAttribute, number3);
         return  instance;
     }
+
+/*    @Override
+    public void setParameter(BeforeEvent beforeEvent, Object o) {
+        readerAntennaInBranch = (ReaderAntennaInBranch) o;
+        System.out.println("readerAntennaInBranch = " + readerAntennaInBranch);
+    }*/
 
     public class Label {
         public double categoryLabel;

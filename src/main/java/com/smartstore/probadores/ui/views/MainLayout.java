@@ -20,9 +20,7 @@ import com.vaadin.flow.router.RouterLink;
  */
 public class MainLayout extends AppLayout {
 
-    /**
-     * A simple navigation item component, based on ListItem element.
-     */
+/*
     public static class MenuItemInfo extends ListItem {
 
         private final Class<? extends Component> view;
@@ -46,10 +44,11 @@ public class MainLayout extends AppLayout {
             return view;
         }
 
-        /**
+*
          * Simple wrapper to create icons using LineAwesome iconset. See
          * https://icons8.com/line-awesome
-         */
+
+
         @NpmPackage(value = "line-awesome", version = "1.3.0")
         public static class LineAwesomeIcon extends Span {
             public LineAwesomeIcon(String lineawesomeClassnames) {
@@ -103,5 +102,6 @@ public class MainLayout extends AppLayout {
 
         };
     }
+*/
 
 }
