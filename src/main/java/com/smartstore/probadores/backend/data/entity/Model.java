@@ -1,4 +1,4 @@
-package com.smartstore.probadores.ui.backend.data.entity;
+package com.smartstore.probadores.backend.data.entity;
 
 import javax.persistence.*;
 

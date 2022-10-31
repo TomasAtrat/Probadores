@@ -1,23 +1,17 @@
 package com.smartstore.probadores.ui.views.sistemadeprobadores;
 
-import com.smartstore.probadores.ui.backend.data.entity.Product;
-import com.smartstore.probadores.ui.backend.microservices.product.services.ProductService;
+import com.smartstore.probadores.backend.data.entity.Product;
+import com.smartstore.probadores.backend.data.entity.ReaderAntennaInBranch;
+import com.smartstore.probadores.backend.microservices.product.services.ProductService;
 import com.smartstore.probadores.ui.views.MainLayout;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
-import org.datavec.api.records.reader.RecordReader;
-import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
-import org.datavec.api.split.FileSplit;
+import com.vaadin.flow.router.*;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.*;
@@ -27,7 +21,6 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -37,14 +30,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @PageTitle("Sistema de probadores")
-@Route(value = "hello", layout = MainLayout.class)
-@RouteAlias(value = "", layout = MainLayout.class)
-public class SistemadeprobadoresView extends HorizontalLayout {
+@Route(value = "probadores", layout = MainLayout.class)
+public class SistemadeprobadoresView extends HorizontalLayout/* implements HasUrlParameter*/ {
 
     private TextField name;
     private Button sayHello;
 
     private ProductService productService;
+    private ReaderAntennaInBranch readerAntennaInBranch;
 
     public SistemadeprobadoresView(ProductService productService) throws Exception {
 
@@ -128,7 +121,7 @@ public class SistemadeprobadoresView extends HorizontalLayout {
             unlabeled.setValue(modelAttribute, product.getModelId().getId());
             unlabeledInstances.add(unlabeled);
 
-            int prediction  = (int)targetFunction.classifyInstance(unlabeledInstances.get(0));
+            int prediction = (int) targetFunction.classifyInstance(unlabeledInstances.get(0));
 
             Evaluation evaluation = new Evaluation(trainingDataset);
             evaluation.evaluateModel(targetFunction, trainingDataset);
@@ -172,8 +165,15 @@ public class SistemadeprobadoresView extends HorizontalLayout {
         instance.setValue(categoryAttribute, number1);
         instance.setValue(modelAttribute, number2);
         instance.setValue(suggestAttribute, number3);
-        return  instance;
+        return instance;
     }
+
+/*
+    @Override
+    public void setParameter(BeforeEvent beforeEvent, Object o) {
+        readerAntennaInBranch = (ReaderAntennaInBranch) o;
+    }
+*/
 
     public class Label {
         public double categoryLabel;

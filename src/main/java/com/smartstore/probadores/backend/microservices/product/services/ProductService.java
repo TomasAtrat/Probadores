@@ -1,7 +1,7 @@
-package com.smartstore.probadores.ui.backend.microservices.product.services;
+package com.smartstore.probadores.backend.microservices.product.services;
 
-import com.smartstore.probadores.ui.backend.data.entity.Product;
-import com.smartstore.probadores.ui.backend.repositories.ProductRepository;
+import com.smartstore.probadores.backend.data.entity.Product;
+import com.smartstore.probadores.backend.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

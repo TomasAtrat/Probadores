@@ -1,6 +1,6 @@
-package com.smartstore.probadores.ui.backend.repositories;
+package com.smartstore.probadores.backend.repositories;
 
-import com.smartstore.probadores.ui.backend.data.entity.Product;
+import com.smartstore.probadores.backend.data.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
