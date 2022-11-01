@@ -1,20 +1,27 @@
 package com.smartstore.probadores.ui.views.sistemadeprobadores;
 
+import com.flowingcode.vaadin.addons.carousel.Carousel;
+import com.flowingcode.vaadin.addons.carousel.Slide;
 import com.smartstore.probadores.ui.backend.data.entity.Product;
 import com.smartstore.probadores.ui.backend.data.entity.ReaderAntennaInBranch;
 import com.smartstore.probadores.ui.backend.microservices.product.services.ProductService;
+import com.smartstore.probadores.ui.backend.microservices.reader.components.ReaderMaster;
 import com.smartstore.probadores.ui.views.MainLayout;
+import com.smartstore.probadores.ui.views.utils.InMemoryVariables;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.BoxSizing;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import org.apache.commons.codec.binary.Base64;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.SimpleLinearRegression;
@@ -32,21 +39,26 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.vaadin.flow.component.Unit.PIXELS;
+
 @PageTitle("Sistema de probadores")
 @Route(value = "hello", layout = MainLayout.class)
-/*
-@RouteAlias(value = "", layout = MainLayout.class)
-*/
-public class SistemadeprobadoresView extends HorizontalLayout /*implements HasUrlParameter */{
+public class SistemadeprobadoresView extends VerticalLayout {
 
-    private TextField name;
+    public static TextField name;
     private Button sayHello;
+    public static Carousel carousel;
 
     private ReaderAntennaInBranch readerAntennaInBranch;
     private ProductService productService;
 
     public SistemadeprobadoresView(ProductService productService) throws Exception {
         this.productService = productService;
+
+        carousel = new Carousel();
+
+        Board board = new Board();
+        board.addRow(carousel);
 
         VerticalLayout mainLayout = new VerticalLayout();
 
@@ -58,11 +70,13 @@ public class SistemadeprobadoresView extends HorizontalLayout /*implements HasUr
         sayHello.addClickShortcut(Key.ENTER);
 
         setMargin(true);
-        setVerticalComponentAlignment(Alignment.END, name, sayHello);
+        //setVerticalComponentAlignment(Alignment.END, name, sayHello);
 
         mainLayout.add(name, sayHello);
 
-        add(mainLayout);
+        board.addRow(mainLayout);
+
+        add(board);
 
         Product combination = GetCombination(2);
         if (combination != null) {
@@ -82,6 +96,53 @@ public class SistemadeprobadoresView extends HorizontalLayout /*implements HasUr
             combinationLayout.add(productPrice);
 
             add(combinationLayout);
+
+        }
+        configureReader();
+    }
+
+    public static void addImages(List<byte[]> images) {
+        List<Slide> slides = new ArrayList<>();
+        for (int i = 0; i < images.size(); i++) {
+            Slide slideImg = new Slide(createSlideContent(images.get(i)));
+            slides.add(slideImg);
+        }
+
+        carousel.setSlides(slides.toArray(new Slide[0]));
+
+        carousel.withAutoProgress();
+        carousel.withSlideDuration(2);
+        carousel.withStartPosition(1);
+        carousel.withoutSwipe();
+        carousel.setWidthFull();
+    }
+
+    public static Component createSlideContent(byte[] img) {
+        VerticalLayout d = new VerticalLayout();
+        d.setAlignItems(Alignment.CENTER);
+        d.setBoxSizing(BoxSizing.CONTENT_BOX);
+        d.setMaxHeight(500, PIXELS);
+
+        String url = "data:"+"image/jpeg"+";base64," + Base64.encodeBase64String(img);
+        Image image = new Image(url, "");
+        image.setMaxHeight(400, PIXELS);
+        image.setMaxWidth(800, PIXELS);
+        d.add(image);
+        return d;
+    }
+
+    private void configureReader() {
+        readerAntennaInBranch = InMemoryVariables.readerAntennaInBranch;
+
+        System.out.println("readerAntennaInBranch = " + readerAntennaInBranch);
+
+        try {
+            ReaderMaster readerMaster = new ReaderMaster(readerAntennaInBranch, productService);
+            readerMaster.setUI(UI.getCurrent());
+            readerMaster.configureReader();
+            readerMaster.startReader();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -126,7 +187,7 @@ public class SistemadeprobadoresView extends HorizontalLayout /*implements HasUr
             unlabeled.setValue(modelAttribute, product.getModelId().getId());
             unlabeledInstances.add(unlabeled);
 
-            int prediction  = (int)targetFunction.classifyInstance(unlabeledInstances.get(0));
+            int prediction = (int) targetFunction.classifyInstance(unlabeledInstances.get(0));
 
             Evaluation evaluation = new Evaluation(trainingDataset);
             evaluation.evaluateModel(targetFunction, trainingDataset);
@@ -170,14 +231,8 @@ public class SistemadeprobadoresView extends HorizontalLayout /*implements HasUr
         instance.setValue(categoryAttribute, number1);
         instance.setValue(modelAttribute, number2);
         instance.setValue(suggestAttribute, number3);
-        return  instance;
+        return instance;
     }
-
-/*    @Override
-    public void setParameter(BeforeEvent beforeEvent, Object o) {
-        readerAntennaInBranch = (ReaderAntennaInBranch) o;
-        System.out.println("readerAntennaInBranch = " + readerAntennaInBranch);
-    }*/
 
     public class Label {
         public double categoryLabel;

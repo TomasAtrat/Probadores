@@ -1,13 +1,20 @@
 package com.smartstore.probadores.ui.views.startup;
 
+import com.google.gson.Gson;
+import com.smartstore.probadores.testrfid.TagReportListenerImplementation;
 import com.smartstore.probadores.ui.backend.data.entity.Branch;
 import com.smartstore.probadores.ui.backend.data.entity.ReaderAntennaInBranch;
+import com.smartstore.probadores.ui.backend.microservices.product.services.ProductService;
+import com.smartstore.probadores.ui.backend.microservices.reader.components.ReaderMaster;
 import com.smartstore.probadores.ui.backend.microservices.reader.services.ReaderService;
 import com.smartstore.probadores.ui.views.MainLayout;
 import com.smartstore.probadores.ui.views.sistemadeprobadores.SistemadeprobadoresView;
+import com.smartstore.probadores.ui.views.utils.InMemoryVariables;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -19,10 +26,12 @@ public class StartupView extends VerticalLayout {
     private ComboBox<Branch> branchComboBox;
     private ComboBox<Integer> fittingRoomComboBox;
     private ReaderService readerService;
+    private ProductService productService;
     private Button confirmButton;
 
-    public StartupView(ReaderService readerService) {
+    public StartupView(ReaderService readerService, ProductService productService) {
         this.readerService = readerService;
+        this.productService = productService;
 
         setAlignItems(Alignment.CENTER);
 
@@ -35,12 +44,14 @@ public class StartupView extends VerticalLayout {
 
     private void setupButton() {
         confirmButton = new Button("Confirmar");
-        confirmButton.addClickListener(e-> {
+        confirmButton.addClickListener(e -> {
             ReaderAntennaInBranch readerAntennaInBranch =
                     readerService.findByBranchAndFittingRoom(branchComboBox.getValue(),
                             fittingRoomComboBox.getValue());
 
-            confirmButton.getUI().ifPresent(ui-> ui.navigate(SistemadeprobadoresView.class));
+            InMemoryVariables.readerAntennaInBranch = readerAntennaInBranch;
+
+            UI.getCurrent().access(() -> confirmButton.getUI().ifPresent(ui -> ui.navigate(SistemadeprobadoresView.class)));
         });
     }
 

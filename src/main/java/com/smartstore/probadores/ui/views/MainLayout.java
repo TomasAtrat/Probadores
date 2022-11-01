@@ -20,48 +20,6 @@ import com.vaadin.flow.router.RouterLink;
  */
 public class MainLayout extends AppLayout {
 
-/*
-    public static class MenuItemInfo extends ListItem {
-
-        private final Class<? extends Component> view;
-
-        public MenuItemInfo(String menuTitle, String iconClass, Class<? extends Component> view) {
-            this.view = view;
-            RouterLink link = new RouterLink();
-            // Use Lumo classnames for various styling
-            link.addClassNames("flex", "gap-xs", "h-m", "items-center", "px-s", "text-body");
-            link.setRoute(view);
-
-            Span text = new Span(menuTitle);
-            // Use Lumo classnames for various styling
-            text.addClassNames("font-medium", "text-m", "whitespace-nowrap");
-
-            link.add(new LineAwesomeIcon(iconClass), text);
-            add(link);
-        }
-
-        public Class<?> getView() {
-            return view;
-        }
-
-*
-         * Simple wrapper to create icons using LineAwesome iconset. See
-         * https://icons8.com/line-awesome
-
-
-        @NpmPackage(value = "line-awesome", version = "1.3.0")
-        public static class LineAwesomeIcon extends Span {
-            public LineAwesomeIcon(String lineawesomeClassnames) {
-                // Use Lumo classnames for suitable font styling
-                addClassNames("text-l", "text-secondary");
-                if (!lineawesomeClassnames.isEmpty()) {
-                    addClassNames(lineawesomeClassnames);
-                }
-            }
-        }
-
-    }
-
     public MainLayout() {
         addToNavbar(createHeaderContent());
     }
@@ -77,31 +35,9 @@ public class MainLayout extends AppLayout {
         appName.addClassNames("my-m", "me-auto", "text-l");
         layout.add(appName);
 
-        Nav nav = new Nav();
-        nav.addClassNames("flex", "overflow-auto", "px-m", "py-xs");
+        header.add(layout);
 
-        // Wrap the links in a list; improves accessibility
-        UnorderedList list = new UnorderedList();
-        list.addClassNames("flex", "gap-s", "list-none", "m-0", "p-0");
-        nav.add(list);
-
-        for (MenuItemInfo menuItem : createMenuItems()) {
-            list.add(menuItem);
-
-        }
-
-        header.add(layout, nav);
         return header;
     }
-
-    private MenuItemInfo[] createMenuItems() {
-        return new MenuItemInfo[]{ //
-                new MenuItemInfo("Sistema de probadores", "la la-globe", SistemadeprobadoresView.class), //
-
-                new MenuItemInfo("About", "la la-chart-area", AboutView.class), //
-
-        };
-    }
-*/
 
 }
