@@ -1,11 +1,8 @@
 package com.smartstore.probadores.ui.views.startup;
 
-import com.google.gson.Gson;
-import com.smartstore.probadores.testrfid.TagReportListenerImplementation;
 import com.smartstore.probadores.ui.backend.data.entity.Branch;
 import com.smartstore.probadores.ui.backend.data.entity.ReaderAntennaInBranch;
 import com.smartstore.probadores.ui.backend.microservices.product.services.ProductService;
-import com.smartstore.probadores.ui.backend.microservices.reader.components.ReaderMaster;
 import com.smartstore.probadores.ui.backend.microservices.reader.services.ReaderService;
 import com.smartstore.probadores.ui.views.MainLayout;
 import com.smartstore.probadores.ui.views.sistemadeprobadores.SistemadeprobadoresView;
@@ -14,7 +11,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;

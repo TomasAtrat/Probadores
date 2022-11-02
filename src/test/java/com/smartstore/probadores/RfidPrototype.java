@@ -1,7 +1,7 @@
 package com.smartstore.probadores;
 
 import com.impinj.octane.*;
-import com.smartstore.probadores.testrfid.TagReportListenerImplementation;
+import com.smartstore.probadores.ui.backend.microservices.reader.components.TagReportListenerImplementation;
 import org.junit.Test;
 
 import java.util.Scanner;

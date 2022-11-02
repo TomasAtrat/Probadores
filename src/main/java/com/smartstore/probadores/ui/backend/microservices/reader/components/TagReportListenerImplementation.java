@@ -1,4 +1,4 @@
-package com.smartstore.probadores.testrfid;
+package com.smartstore.probadores.ui.backend.microservices.reader.components;
 
 import com.impinj.octane.ImpinjReader;
 import com.impinj.octane.Tag;

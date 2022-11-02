@@ -1,7 +1,6 @@
 package com.smartstore.probadores.ui.backend.microservices.reader.components;
 
 import com.impinj.octane.*;
-import com.smartstore.probadores.testrfid.TagReportListenerImplementation;
 import com.smartstore.probadores.ui.backend.data.entity.ReaderAntennaInBranch;
 import com.smartstore.probadores.ui.backend.microservices.product.services.ProductService;
 import com.vaadin.flow.component.UI;

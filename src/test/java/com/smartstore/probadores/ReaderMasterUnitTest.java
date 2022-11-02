@@ -1,6 +1,5 @@
 package com.smartstore.probadores;
 
-import com.smartstore.probadores.testrfid.TagReportListenerImplementation;
 import com.smartstore.probadores.ui.backend.data.entity.Branch;
 import com.smartstore.probadores.ui.backend.data.entity.Reader;
 import com.smartstore.probadores.ui.backend.data.entity.ReaderAntennaInBranch;
