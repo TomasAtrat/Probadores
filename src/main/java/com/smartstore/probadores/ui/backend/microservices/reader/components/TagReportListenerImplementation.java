@@ -52,6 +52,7 @@ public class TagReportListenerImplementation implements TagReportListener {
 
         ui.access(() -> {
             SistemadeprobadoresView.addImages(products.stream().map(Product::getPicture).toList());
+            SistemadeprobadoresView.setProductsToCombobox(products);
         });
     }
 

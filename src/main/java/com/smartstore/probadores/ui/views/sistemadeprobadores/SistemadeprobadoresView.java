@@ -14,6 +14,7 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.BoxSizing;
@@ -22,6 +23,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.apache.commons.codec.binary.Base64;
+import org.nd4j.linalg.api.ops.impl.reduce.same.Prod;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.SimpleLinearRegression;
@@ -48,6 +50,9 @@ public class SistemadeprobadoresView extends VerticalLayout {
     public static TextField name;
     private Button sayHello;
     public static Carousel carousel;
+    public static ComboBox<Product> productComboBox;
+    public static ComboBox<String> coloursComboBox;
+    public static ComboBox<String> sizesComboBox;
 
     private ReaderAntennaInBranch readerAntennaInBranch;
     private ProductService productService;
@@ -57,26 +62,19 @@ public class SistemadeprobadoresView extends VerticalLayout {
 
         carousel = new Carousel();
 
-        Board board = new Board();
-        board.addRow(carousel);
-
         VerticalLayout mainLayout = new VerticalLayout();
 
-        name = new TextField("Your name");
-        sayHello = new Button("Say hello");
-        sayHello.addClickListener(e -> {
-            Notification.show("Hello " + name.getValue());
-        });
-        sayHello.addClickShortcut(Key.ENTER);
+        productComboBox = new ComboBox<>("Productos");
+        coloursComboBox = new ComboBox<>("Colores disponibles");
+        sizesComboBox = new ComboBox<>("Talles disponibles");
+
+        //TODO: Update combo boxes when product is selected
 
         setMargin(true);
-        //setVerticalComponentAlignment(Alignment.END, name, sayHello);
 
-        mainLayout.add(name, sayHello);
+        mainLayout.add(productComboBox, coloursComboBox, sizesComboBox);
 
-        board.addRow(mainLayout);
-
-        add(board);
+        add(carousel, mainLayout);
 
         Product combination = GetCombination(2);
         if (combination != null) {
@@ -99,6 +97,11 @@ public class SistemadeprobadoresView extends VerticalLayout {
 
         }
         configureReader();
+    }
+
+    public static void setProductsToCombobox(List<Product> products){
+        productComboBox.setItems(products);
+        productComboBox.setItemLabelGenerator(i-> i.getId() + " - " + i.getDescription());
     }
 
     public static void addImages(List<byte[]> images) {
