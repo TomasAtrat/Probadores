@@ -2,6 +2,7 @@ package com.smartstore.probadores.ui.views.sistemadeprobadores;
 
 import com.flowingcode.vaadin.addons.carousel.Carousel;
 import com.flowingcode.vaadin.addons.carousel.Slide;
+import com.smartstore.probadores.ui.backend.data.entity.Barcode;
 import com.smartstore.probadores.ui.backend.data.entity.Product;
 import com.smartstore.probadores.ui.backend.data.entity.ReaderAntennaInBranch;
 import com.smartstore.probadores.ui.backend.microservices.product.services.ProductService;
@@ -9,21 +10,18 @@ import com.smartstore.probadores.ui.backend.microservices.reader.components.Read
 import com.smartstore.probadores.ui.views.MainLayout;
 import com.smartstore.probadores.ui.views.utils.InMemoryVariables;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.BoxSizing;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.apache.commons.codec.binary.Base64;
-import org.nd4j.linalg.api.ops.impl.reduce.same.Prod;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.SimpleLinearRegression;
@@ -47,8 +45,8 @@ import static com.vaadin.flow.component.Unit.PIXELS;
 @Route(value = "hello", layout = MainLayout.class)
 public class SistemadeprobadoresView extends VerticalLayout {
 
-    public static TextField name;
-    private Button sayHello;
+    public static final short MAX_HEIGHT = 350;
+
     public static Carousel carousel;
     public static ComboBox<Product> productComboBox;
     public static ComboBox<String> coloursComboBox;
@@ -60,21 +58,24 @@ public class SistemadeprobadoresView extends VerticalLayout {
     public SistemadeprobadoresView(ProductService productService) throws Exception {
         this.productService = productService;
 
+        readerAntennaInBranch = InMemoryVariables.readerAntennaInBranch;
+
         carousel = new Carousel();
+        carousel.setMaxHeight(MAX_HEIGHT, PIXELS);
+
+        Board board = new Board();
 
         VerticalLayout mainLayout = new VerticalLayout();
 
-        productComboBox = new ComboBox<>("Productos");
-        coloursComboBox = new ComboBox<>("Colores disponibles");
-        sizesComboBox = new ComboBox<>("Talles disponibles");
-
-        //TODO: Update combo boxes when product is selected
+        setupAvailableProductComboBoxes();
 
         setMargin(true);
 
         mainLayout.add(productComboBox, coloursComboBox, sizesComboBox);
 
-        add(carousel, mainLayout);
+        board.addRow(carousel, mainLayout);
+
+        add(board);
 
         Product combination = GetCombination(2);
         if (combination != null) {
@@ -97,6 +98,25 @@ public class SistemadeprobadoresView extends VerticalLayout {
 
         }
         configureReader();
+    }
+
+    private void setupAvailableProductComboBoxes() {
+        productComboBox = new ComboBox<>("Productos");
+        coloursComboBox = new ComboBox<>("Colores disponibles");
+        sizesComboBox = new ComboBox<>("Talles disponibles");
+
+        productComboBox.addValueChangeListener(e -> {
+            if (e.getValue() != null) updateDifferentColoursAndSizes(e.getValue());
+        });
+    }
+
+    private void updateDifferentColoursAndSizes(Product product) {
+        List<Barcode> productVariants = productService.getProductVariantsInStock(product.getId(), readerAntennaInBranch.getBranch().getId());
+        List<String> sizes = productVariants.stream().map(Barcode::getSize).distinct().toList();
+        List<String> colours = productVariants.stream().map(Barcode::getColour).distinct().toList();
+
+        sizesComboBox.setItems(sizes);
+        coloursComboBox.setItems(colours);
     }
 
     public static void setProductsToCombobox(List<Product> products){
@@ -124,19 +144,17 @@ public class SistemadeprobadoresView extends VerticalLayout {
         VerticalLayout d = new VerticalLayout();
         d.setAlignItems(Alignment.CENTER);
         d.setBoxSizing(BoxSizing.CONTENT_BOX);
-        d.setMaxHeight(500, PIXELS);
+        d.setMaxHeight(MAX_HEIGHT, PIXELS);
 
         String url = "data:"+"image/jpeg"+";base64," + Base64.encodeBase64String(img);
         Image image = new Image(url, "");
-        image.setMaxHeight(400, PIXELS);
-        image.setMaxWidth(800, PIXELS);
+        image.setMaxHeight(MAX_HEIGHT, PIXELS);
+        image.setMaxWidth(700, PIXELS);
         d.add(image);
         return d;
     }
 
     private void configureReader() {
-        readerAntennaInBranch = InMemoryVariables.readerAntennaInBranch;
-
         System.out.println("readerAntennaInBranch = " + readerAntennaInBranch);
 
         try {

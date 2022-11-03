@@ -1,5 +1,6 @@
 package com.smartstore.probadores.ui.backend.microservices.product.services;
 
+import com.smartstore.probadores.ui.backend.data.entity.Barcode;
 import com.smartstore.probadores.ui.backend.data.entity.Product;
 import com.smartstore.probadores.ui.backend.data.entity.ProductInFittingRoom;
 import com.smartstore.probadores.ui.backend.repositories.BarcodeRepository;
@@ -40,5 +41,9 @@ public class ProductService {
 
     public void insertLog(ProductInFittingRoom productInFittingRoom) {
         productInFittingRoomRepository.save(productInFittingRoom);
+    }
+
+    public List<Barcode> getProductVariantsInStock(String productCode, Long branchId) {
+        return barcodeRepository.getProductVariantsInStock(productCode, branchId);
     }
 }
