@@ -21,6 +21,8 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.BoxSizing;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.apache.commons.codec.binary.Base64;
@@ -59,7 +61,9 @@ public class SistemadeprobadoresView extends VerticalLayout {
     private ProductService productService;
     private TaskService taskService;
 
-    public SistemadeprobadoresView(ProductService productService, TaskService taskService) throws Exception {
+    private static final DecimalFormat df = new DecimalFormat("0.00");
+
+    public SistemadeprobadoresView(ProductService productService) throws Exception {
         this.productService = productService;
         this.taskService = taskService;
 
@@ -85,7 +89,13 @@ public class SistemadeprobadoresView extends VerticalLayout {
 
         add(board);
 
-        Product combination = GetCombination(2);
+        ExchangeType exchangeType = productService.GetExchangeType(40.0);
+        System.out.println("Pesos uruguayos: " + df.format(exchangeType.getUruguayanPeso()));
+        System.out.println("Pesos argentinos: " + df.format(exchangeType.getArgentinianPeso()));
+        System.out.println("Reales brasileros: " + df.format(exchangeType.getBrazilianReal()));
+        System.out.println("Dólares: " + df.format(exchangeType.getDollar()));
+
+        Product combination = GetCombination(1);
         if (combination != null) {
             VerticalLayout combinationLayout = new VerticalLayout();
 
