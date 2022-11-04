@@ -1,5 +1,6 @@
 package com.smartstore.probadores.ui.views.sistemadeprobadores;
 
+import com.smartstore.probadores.ui.backend.data.dto.ExchangeType;
 import com.smartstore.probadores.ui.backend.data.entity.Product;
 import com.smartstore.probadores.ui.backend.data.entity.ReaderAntennaInBranch;
 import com.smartstore.probadores.ui.backend.microservices.product.services.ProductService;
@@ -29,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +46,8 @@ public class SistemadeprobadoresView extends HorizontalLayout /*implements HasUr
 
     private ReaderAntennaInBranch readerAntennaInBranch;
     private ProductService productService;
+
+    private static final DecimalFormat df = new DecimalFormat("0.00");
 
     public SistemadeprobadoresView(ProductService productService) throws Exception {
         this.productService = productService;
@@ -64,7 +68,13 @@ public class SistemadeprobadoresView extends HorizontalLayout /*implements HasUr
 
         add(mainLayout);
 
-        Product combination = GetCombination(2);
+        ExchangeType exchangeType = productService.GetExchangeType(40.0);
+        System.out.println("Pesos uruguayos: " + df.format(exchangeType.getUruguayanPeso()));
+        System.out.println("Pesos argentinos: " + df.format(exchangeType.getArgentinianPeso()));
+        System.out.println("Reales brasileros: " + df.format(exchangeType.getBrazilianReal()));
+        System.out.println("Dólares: " + df.format(exchangeType.getDollar()));
+
+        Product combination = GetCombination(1);
         if (combination != null) {
             VerticalLayout combinationLayout = new VerticalLayout();
 
