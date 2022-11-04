@@ -20,10 +20,10 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.BoxSizing;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.apache.commons.codec.binary.Base64;
@@ -59,13 +59,18 @@ public class SistemadeprobadoresView extends VerticalLayout {
     public static ComboBox<String> sizesComboBox;
     public static Button orderItemBtn;
 
+    public static TextField uruguayanPesoTxt;
+    public static TextField brazilianRealTxt;
+    public static TextField argentinianPesoTxt;
+    public static TextField americanDollarTxt;
+
     private ReaderAntennaInBranch readerAntennaInBranch;
     private ProductService productService;
     private TaskService taskService;
 
     private static final DecimalFormat df = new DecimalFormat("0.00");
 
-    public SistemadeprobadoresView(ProductService productService) throws Exception {
+    public SistemadeprobadoresView(ProductService productService, TaskService taskService) throws Exception {
         this.productService = productService;
         this.taskService = taskService;
 
@@ -87,17 +92,16 @@ public class SistemadeprobadoresView extends VerticalLayout {
 
         mainLayout.add(productComboBox, coloursComboBox, sizesComboBox, orderItemBtn);
 
-        board.addRow(carousel, mainLayout);
+        VerticalLayout exchangeLayout = createExchangeLayout();
+
+        HorizontalLayout productInfo = new HorizontalLayout(mainLayout, exchangeLayout);
+
+        board.addRow(carousel, productInfo);
 
         add(board);
 
-        ExchangeType exchangeType = productService.GetExchangeType(40.0);
-        System.out.println("Pesos uruguayos: " + df.format(exchangeType.getUruguayanPeso()));
-        System.out.println("Pesos argentinos: " + df.format(exchangeType.getArgentinianPeso()));
-        System.out.println("Reales brasileros: " + df.format(exchangeType.getBrazilianReal()));
-        System.out.println("Dólares: " + df.format(exchangeType.getDollar()));
-
         Product combination = GetCombination(1);
+
         if (combination != null) {
             VerticalLayout combinationLayout = new VerticalLayout();
 
@@ -118,6 +122,44 @@ public class SistemadeprobadoresView extends VerticalLayout {
 
         }
         configureReader();
+    }
+
+    public void setupExchange(Double price) {
+        try {
+            ExchangeType exchangeType = productService.GetExchangeType(price);
+
+            uruguayanPesoTxt.setValue(df.format(exchangeType.getUruguayanPeso()));
+            argentinianPesoTxt.setValue(df.format(exchangeType.getArgentinianPeso()));
+            brazilianRealTxt.setValue(df.format(exchangeType.getBrazilianReal()));
+            americanDollarTxt.setValue(df.format(exchangeType.getDollar()));
+
+        } catch (Exception e) {
+            Notification.show("Se produjo un error al obtener el cambio", 5000, Notification.Position.BOTTOM_CENTER);
+            e.printStackTrace();
+        }
+    }
+
+    private VerticalLayout createExchangeLayout() {
+        uruguayanPesoTxt = new TextField("Peso uruguayo");
+        uruguayanPesoTxt.setEnabled(false);
+        uruguayanPesoTxt.addThemeVariants(TextFieldVariant.LUMO_SMALL);
+
+        argentinianPesoTxt = new TextField("Peso argentino");
+        argentinianPesoTxt.setEnabled(false);
+        argentinianPesoTxt.addThemeVariants(TextFieldVariant.LUMO_SMALL);
+
+        brazilianRealTxt = new TextField("Real brasilero");
+        brazilianRealTxt.setEnabled(false);
+        brazilianRealTxt.addThemeVariants(TextFieldVariant.LUMO_SMALL);
+
+        americanDollarTxt = new TextField("Dólar americano");
+        americanDollarTxt.setEnabled(false);
+        americanDollarTxt.addThemeVariants(TextFieldVariant.LUMO_SMALL);
+
+        VerticalLayout exchangeLayout = new VerticalLayout(uruguayanPesoTxt, argentinianPesoTxt, brazilianRealTxt, americanDollarTxt);
+        exchangeLayout.setSpacing(false);
+
+        return exchangeLayout;
     }
 
     private void setupOrderItemBtn() {
@@ -144,7 +186,7 @@ public class SistemadeprobadoresView extends VerticalLayout {
             var answer = taskService.createTaskFromFittingRoom(readerAntennaInBranch.getFittingRoom(),
                     readerAntennaInBranch.getBranch(),
                     barcode);
-            if(answer.status == 200)
+            if (answer.status == 200)
                 Notification.show("Estamos trabajando en tu pedido. En breve te atenderemos", 5000, Notification.Position.MIDDLE);
         } else
             Notification.show("No hay stock del producto del talle y color especificado", 5000, Notification.Position.BOTTOM_CENTER);
@@ -156,7 +198,10 @@ public class SistemadeprobadoresView extends VerticalLayout {
         sizesComboBox = new ComboBox<>("Talles disponibles");
 
         productComboBox.addValueChangeListener(e -> {
-            if (e.getValue() != null) updateDifferentColoursAndSizes(e.getValue());
+            if (e.getValue() != null) {
+                setupExchange(e.getValue().getPrice().doubleValue());
+                updateDifferentColoursAndSizes(e.getValue());
+            }
         });
     }
 

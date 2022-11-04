@@ -4,6 +4,7 @@ import com.impinj.octane.ImpinjReader;
 import com.impinj.octane.Tag;
 import com.impinj.octane.TagReport;
 import com.impinj.octane.TagReportListener;
+import com.smartstore.probadores.ui.backend.data.dto.ExchangeType;
 import com.smartstore.probadores.ui.backend.data.entity.Product;
 import com.smartstore.probadores.ui.backend.data.entity.ProductInFittingRoom;
 import com.smartstore.probadores.ui.backend.microservices.product.services.ProductService;
@@ -13,6 +14,7 @@ import com.smartstore.probadores.ui.views.sistemadeprobadores.Sistemadeprobadore
 import com.smartstore.probadores.ui.views.utils.InMemoryVariables;
 import com.vaadin.flow.component.UI;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
