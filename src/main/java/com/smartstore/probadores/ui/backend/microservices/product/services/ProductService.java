@@ -46,4 +46,8 @@ public class ProductService {
     public List<Barcode> getProductVariantsInStock(String productCode, Long branchId) {
         return barcodeRepository.getProductVariantsInStock(productCode, branchId);
     }
+
+    public Barcode getBarcodeByProductColourAndSize(Product product, String colour, String size, Long branchId) {
+        return barcodeRepository.findByProductCodeAndColourAndSizeAndBranch(product.getId(), colour, size, branchId);
+    }
 }

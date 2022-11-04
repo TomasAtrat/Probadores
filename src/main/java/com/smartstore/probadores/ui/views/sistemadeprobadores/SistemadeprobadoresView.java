@@ -7,6 +7,7 @@ import com.smartstore.probadores.ui.backend.data.entity.Product;
 import com.smartstore.probadores.ui.backend.data.entity.ReaderAntennaInBranch;
 import com.smartstore.probadores.ui.backend.microservices.product.services.ProductService;
 import com.smartstore.probadores.ui.backend.microservices.reader.components.ReaderMaster;
+import com.smartstore.probadores.ui.backend.microservices.task.services.TaskService;
 import com.smartstore.probadores.ui.views.MainLayout;
 import com.smartstore.probadores.ui.views.utils.InMemoryVariables;
 import com.vaadin.flow.component.Component;
@@ -16,6 +17,7 @@ import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.BoxSizing;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -51,17 +53,23 @@ public class SistemadeprobadoresView extends VerticalLayout {
     public static ComboBox<Product> productComboBox;
     public static ComboBox<String> coloursComboBox;
     public static ComboBox<String> sizesComboBox;
+    public static Button orderItemBtn;
 
     private ReaderAntennaInBranch readerAntennaInBranch;
     private ProductService productService;
+    private TaskService taskService;
 
-    public SistemadeprobadoresView(ProductService productService) throws Exception {
+    public SistemadeprobadoresView(ProductService productService, TaskService taskService) throws Exception {
         this.productService = productService;
+        this.taskService = taskService;
 
         readerAntennaInBranch = InMemoryVariables.readerAntennaInBranch;
 
         carousel = new Carousel();
+
         carousel.setMaxHeight(MAX_HEIGHT, PIXELS);
+
+        setupOrderItemBtn();
 
         Board board = new Board();
 
@@ -71,7 +79,7 @@ public class SistemadeprobadoresView extends VerticalLayout {
 
         setMargin(true);
 
-        mainLayout.add(productComboBox, coloursComboBox, sizesComboBox);
+        mainLayout.add(productComboBox, coloursComboBox, sizesComboBox, orderItemBtn);
 
         board.addRow(carousel, mainLayout);
 
@@ -100,6 +108,36 @@ public class SistemadeprobadoresView extends VerticalLayout {
         configureReader();
     }
 
+    private void setupOrderItemBtn() {
+        orderItemBtn = new Button("Pedir prenda");
+        orderItemBtn.addClickListener(e -> orderItem());
+    }
+
+    private void orderItem() {
+        if (productComboBox.getValue() != null && sizesComboBox.getValue() != null && coloursComboBox != null)
+            orderItemIfExists();
+        else
+            Notification.show("Primero debe especificar un producto, talle y color", 5000, Notification.Position.BOTTOM_CENTER);
+    }
+
+    private void orderItemIfExists() {
+        Product product = productComboBox.getValue();
+        String colour = coloursComboBox.getValue();
+        String size = sizesComboBox.getValue();
+        Long branchId = readerAntennaInBranch.getBranch().getId();
+
+        Barcode barcode = productService.getBarcodeByProductColourAndSize(product, colour, size, branchId);
+
+        if (barcode != null) {
+            var answer = taskService.createTaskFromFittingRoom(readerAntennaInBranch.getFittingRoom(),
+                    readerAntennaInBranch.getBranch(),
+                    barcode);
+            if(answer.status == 200)
+                Notification.show("Estamos trabajando en tu pedido. En breve te atenderemos", 5000, Notification.Position.MIDDLE);
+        } else
+            Notification.show("No hay stock del producto del talle y color especificado", 5000, Notification.Position.BOTTOM_CENTER);
+    }
+
     private void setupAvailableProductComboBoxes() {
         productComboBox = new ComboBox<>("Productos");
         coloursComboBox = new ComboBox<>("Colores disponibles");
@@ -119,9 +157,9 @@ public class SistemadeprobadoresView extends VerticalLayout {
         coloursComboBox.setItems(colours);
     }
 
-    public static void setProductsToCombobox(List<Product> products){
+    public static void setProductsToCombobox(List<Product> products) {
         productComboBox.setItems(products);
-        productComboBox.setItemLabelGenerator(i-> i.getId() + " - " + i.getDescription());
+        productComboBox.setItemLabelGenerator(i -> i.getId() + " - " + i.getDescription());
     }
 
     public static void addImages(List<byte[]> images) {
@@ -146,7 +184,7 @@ public class SistemadeprobadoresView extends VerticalLayout {
         d.setBoxSizing(BoxSizing.CONTENT_BOX);
         d.setMaxHeight(MAX_HEIGHT, PIXELS);
 
-        String url = "data:"+"image/jpeg"+";base64," + Base64.encodeBase64String(img);
+        String url = "data:" + "image/jpeg" + ";base64," + Base64.encodeBase64String(img);
         Image image = new Image(url, "");
         image.setMaxHeight(MAX_HEIGHT, PIXELS);
         image.setMaxWidth(700, PIXELS);
