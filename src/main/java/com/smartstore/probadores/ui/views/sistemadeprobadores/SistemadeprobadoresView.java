@@ -2,6 +2,7 @@ package com.smartstore.probadores.ui.views.sistemadeprobadores;
 
 import com.flowingcode.vaadin.addons.carousel.Carousel;
 import com.flowingcode.vaadin.addons.carousel.Slide;
+import com.smartstore.probadores.ui.backend.data.dto.ExchangeType;
 import com.smartstore.probadores.ui.backend.data.entity.Barcode;
 import com.smartstore.probadores.ui.backend.data.entity.Product;
 import com.smartstore.probadores.ui.backend.data.entity.ReaderAntennaInBranch;
@@ -40,6 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 

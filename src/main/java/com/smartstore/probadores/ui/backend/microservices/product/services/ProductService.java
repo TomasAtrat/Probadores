@@ -66,6 +66,8 @@ public class ProductService {
         con.setRequestMethod("GET");
         con.setRequestProperty("Content-Type", "application/json");
 
+        System.out.println("con.getResponseMessage() = " + con.getResponseMessage());
+
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(con.getInputStream()));
         String inputLine;
