@@ -3,6 +3,7 @@ package com.smartstore.probadores.ui.backend.microservices.product.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartstore.probadores.ui.backend.data.dto.ExchangeType;
 import com.smartstore.probadores.ui.backend.data.dto.exchange.Root;
+import com.smartstore.probadores.ui.backend.data.entity.Category;
 import com.smartstore.probadores.ui.backend.data.entity.Product;
 import com.smartstore.probadores.ui.backend.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,4 +62,6 @@ public class ProductService {
 
         return result;
     }
+
+    public List<Product> findByCategoryId(Category categoryId) { return this.productRepository.findByCategoryId(categoryId); }
 }

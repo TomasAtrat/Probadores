@@ -8,14 +8,20 @@ import com.smartstore.probadores.ui.views.MainLayout;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.LitRenderer;
+import com.vaadin.flow.data.renderer.Renderer;
+import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import org.nd4j.linalg.api.ops.impl.reduce.same.Prod;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.SimpleLinearRegression;
@@ -32,7 +38,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 
 @PageTitle("Sistema de probadores")
 @Route(value = "hello", layout = MainLayout.class)
@@ -68,6 +76,8 @@ public class SistemadeprobadoresView extends HorizontalLayout /*implements HasUr
 
         add(mainLayout);
 
+        add(GetSimilarities(this.productService.findById(1).get()));
+
         ExchangeType exchangeType = productService.GetExchangeType(40.0);
         System.out.println("Pesos uruguayos: " + df.format(exchangeType.getUruguayanPeso()));
         System.out.println("Pesos argentinos: " + df.format(exchangeType.getArgentinianPeso()));
@@ -93,6 +103,33 @@ public class SistemadeprobadoresView extends HorizontalLayout /*implements HasUr
 
             add(combinationLayout);
         }
+    }
+
+    public VerticalLayout GetSimilarities(Product product) {
+        VerticalLayout resultDiv = new VerticalLayout();
+
+        List<Product> similarProducts = this.productService.findByCategoryId(product.getCategoryId());
+        similarProducts.removeIf(similarProduct -> Objects.equals(similarProduct.getId(), product.getId()));
+
+        Grid<Product> grid = new Grid<>(Product.class, false);
+        grid.addColumn(TemplateRenderer
+                .<Product>of("<div><img style='height: auto; max-width: 100%;' src='[[item.imagedata]]' alt='[[item.name]]'/></div>")
+                .withProperty("imagedata", item -> getImageAsBase64(item.getPicture()))
+                .withProperty("name", item -> item.getId())
+        ).setHeader("Imágen");
+        grid.addColumn(Product::getDescription).setHeader("Descripción");
+        grid.addColumn(Product::getPrice).setHeader("Precio");
+        grid.setItems(similarProducts);
+        grid.setHeight("40px");
+
+        resultDiv.add(new Text("Productos similares:"), grid);
+
+        return resultDiv;
+    }
+
+    private String getImageAsBase64(byte[] string) {
+        String mimeType = "image/png";
+        return "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(string);
     }
 
     public Product GetCombination(int productId) throws Exception {
