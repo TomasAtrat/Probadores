@@ -1,7 +1,7 @@
 package com.smartstore.probadores.ui.backend.microservices.task.services;
 
-import com.smartstore.probadores.ui.backend.data.HTTPAnswer;
-import com.smartstore.probadores.ui.backend.data.Task;
+import com.smartstore.probadores.ui.backend.data.dto.HTTPAnswer;
+import com.smartstore.probadores.ui.backend.data.dto.Task;
 import com.smartstore.probadores.ui.backend.data.entity.Barcode;
 import com.smartstore.probadores.ui.backend.data.entity.Branch;
 import com.smartstore.probadores.ui.backend.microservices.task.components.TaskClient;

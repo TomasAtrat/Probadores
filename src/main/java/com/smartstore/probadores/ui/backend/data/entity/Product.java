@@ -113,4 +113,7 @@ public class Product {
         this.resupplyQuantity = resupplyQuantity;
     }
 
+    public int getIntegerId(){
+        return id;
+    }
 }

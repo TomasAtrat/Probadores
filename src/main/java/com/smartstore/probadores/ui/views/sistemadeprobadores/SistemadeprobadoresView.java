@@ -17,6 +17,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.BoxSizing;
@@ -43,6 +44,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.vaadin.flow.component.Unit.PIXELS;
@@ -58,11 +60,16 @@ public class SistemadeprobadoresView extends VerticalLayout {
     public static ComboBox<String> coloursComboBox;
     public static ComboBox<String> sizesComboBox;
     public static Button orderItemBtn;
-
     public static TextField uruguayanPesoTxt;
     public static TextField brazilianRealTxt;
     public static TextField argentinianPesoTxt;
     public static TextField americanDollarTxt;
+
+    private TextField productDescription;
+    private TextField productPrice;
+    private VerticalLayout combinationLayout;
+
+    public static ReaderMaster readerMaster;
 
     private ReaderAntennaInBranch readerAntennaInBranch;
     private ProductService productService;
@@ -98,30 +105,51 @@ public class SistemadeprobadoresView extends VerticalLayout {
 
         board.addRow(carousel, productInfo);
 
+        board.addRow(createCombinationLayout());
+
         add(board);
 
-        Product combination = GetCombination(1);
-
-        if (combination != null) {
-            VerticalLayout combinationLayout = new VerticalLayout();
-
-            Text combinationText = new Text("Combinación sugerida:");
-            combinationLayout.add(combinationText);
-
-            TextField productDescription = new TextField("Descripción:");
-            productDescription.setValue(combination.getDescription() != null ? combination.getDescription() : "No disponible");
-            productDescription.setReadOnly(true);
-            combinationLayout.add(productDescription);
-
-            TextField productPrice = new TextField("Precio:");
-            productPrice.setValue(combination.getPrice() != null ? combination.getPrice().toString() : "No disponible");
-            productPrice.setReadOnly(true);
-            combinationLayout.add(productPrice);
-
-            add(combinationLayout);
-
-        }
         configureReader();
+    }
+
+    public VerticalLayout createCombinationLayout() {
+        combinationLayout = new VerticalLayout();
+
+        H4 combinationText = new H4("Combinación sugerida:");
+        combinationLayout.add(combinationText);
+
+        productDescription = new TextField("Descripción:");
+        productDescription.setReadOnly(true);
+        productDescription.addThemeVariants(TextFieldVariant.LUMO_SMALL);
+        combinationLayout.add(productDescription);
+
+        productPrice = new TextField("Precio:");
+        productPrice.setReadOnly(true);
+        productPrice.addThemeVariants(TextFieldVariant.LUMO_SMALL);
+        combinationLayout.add(productPrice);
+
+        combinationLayout.setSpacing(false);
+
+        combinationLayout.setVisible(false);
+
+        return combinationLayout;
+    }
+
+    public void getCombinationFromProductSelected(int id) {
+        try {
+            Product combination = GetCombination(id);
+
+            if (combination != null) {
+                combinationLayout.setVisible(true);
+
+                productDescription.setValue(combination.getDescription() != null ? combination.getDescription() : "No disponible");
+
+                productPrice.setValue(combination.getPrice() != null ? combination.getPrice().toString() : "No disponible");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void setupExchange(Double price) {
@@ -141,19 +169,19 @@ public class SistemadeprobadoresView extends VerticalLayout {
 
     private VerticalLayout createExchangeLayout() {
         uruguayanPesoTxt = new TextField("Peso uruguayo");
-        uruguayanPesoTxt.setEnabled(false);
+        uruguayanPesoTxt.setReadOnly(true);
         uruguayanPesoTxt.addThemeVariants(TextFieldVariant.LUMO_SMALL);
 
         argentinianPesoTxt = new TextField("Peso argentino");
-        argentinianPesoTxt.setEnabled(false);
+        argentinianPesoTxt.setReadOnly(true);
         argentinianPesoTxt.addThemeVariants(TextFieldVariant.LUMO_SMALL);
 
         brazilianRealTxt = new TextField("Real brasilero");
-        brazilianRealTxt.setEnabled(false);
+        brazilianRealTxt.setReadOnly(true);
         brazilianRealTxt.addThemeVariants(TextFieldVariant.LUMO_SMALL);
 
         americanDollarTxt = new TextField("Dólar americano");
-        americanDollarTxt.setEnabled(false);
+        americanDollarTxt.setReadOnly(true);
         americanDollarTxt.addThemeVariants(TextFieldVariant.LUMO_SMALL);
 
         VerticalLayout exchangeLayout = new VerticalLayout(uruguayanPesoTxt, argentinianPesoTxt, brazilianRealTxt, americanDollarTxt);
@@ -201,6 +229,7 @@ public class SistemadeprobadoresView extends VerticalLayout {
             if (e.getValue() != null) {
                 setupExchange(e.getValue().getPrice().doubleValue());
                 updateDifferentColoursAndSizes(e.getValue());
+                getCombinationFromProductSelected(e.getValue().getIntegerId());
             }
         });
     }
@@ -220,18 +249,22 @@ public class SistemadeprobadoresView extends VerticalLayout {
     }
 
     public static void addImages(List<byte[]> images) {
+        System.out.println("images.size() = " + images.size());
+
+        carousel.setHideNavigation(false);
+
         List<Slide> slides = new ArrayList<>();
-        for (int i = 0; i < images.size(); i++) {
-            Slide slideImg = new Slide(createSlideContent(images.get(i)));
+        for (byte[] image : images) {
+            Slide slideImg = new Slide(createSlideContent(image));
             slides.add(slideImg);
         }
 
-        carousel.setSlides(slides.toArray(new Slide[0]));
+        carousel.setSlides((slides.toArray(new Slide[slides.size()])));
 
         carousel.withAutoProgress();
         carousel.withSlideDuration(2);
         carousel.withStartPosition(1);
-        carousel.withoutSwipe();
+
         carousel.setWidthFull();
     }
 
@@ -250,13 +283,13 @@ public class SistemadeprobadoresView extends VerticalLayout {
     }
 
     private void configureReader() {
-        System.out.println("readerAntennaInBranch = " + readerAntennaInBranch);
-
         try {
-            ReaderMaster readerMaster = new ReaderMaster(readerAntennaInBranch, productService);
-            readerMaster.setUI(UI.getCurrent());
-            readerMaster.configureReader();
-            readerMaster.startReader();
+            if (readerMaster == null) {
+                readerMaster = new ReaderMaster(readerAntennaInBranch, productService);
+                readerMaster.setUI(UI.getCurrent());
+                readerMaster.configureReader();
+                readerMaster.startReader();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

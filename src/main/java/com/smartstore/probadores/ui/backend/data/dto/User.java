@@ -1,4 +1,4 @@
-package com.smartstore.probadores.ui.backend.data;
+package com.smartstore.probadores.ui.backend.data.dto;
 
 import lombok.*;
 

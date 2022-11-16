@@ -16,6 +16,7 @@ import com.vaadin.flow.component.UI;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -23,16 +24,17 @@ public class TagReportListenerImplementation implements TagReportListener {
 
     private final ProductService productService;
     private UI ui;
+    private static List<Product> products;
 
     public TagReportListenerImplementation(ProductService productService, UI ui) {
         this.productService = productService;
         this.ui = ui;
+        products = new ArrayList<>();
     }
 
     @Override
     public void onTagReported(ImpinjReader reader, TagReport report) {
         List<Tag> tags = report.getTags();
-        List<Product> products = new ArrayList<>();
 
         EPCSchemaStrategy schemaStrategy = new SGTIN96Schema();
 
@@ -44,8 +46,11 @@ public class TagReportListenerImplementation implements TagReportListener {
             System.out.println();
             var product = productService.findProductByBarcode(barcode.getId());
 
-            if (!products.stream().anyMatch(i -> i.getId().equals(product.getId())))
+            if (products.stream().anyMatch(i -> i.getId().equals(product.getId())))
+                products = new ArrayList<>();
+            else {
                 products.add(product);
+            }
 
             System.out.println("Producto : " + product.getDescription());
 
@@ -55,6 +60,7 @@ public class TagReportListenerImplementation implements TagReportListener {
         ui.access(() -> {
             SistemadeprobadoresView.addImages(products.stream().map(Product::getPicture).toList());
             SistemadeprobadoresView.setProductsToCombobox(products);
+            SistemadeprobadoresView.addImages(products.stream().map(Product::getPicture).toList());
         });
     }
 
