@@ -3,6 +3,7 @@ package com.smartstore.probadores.ui.backend.microservices.product.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartstore.probadores.ui.backend.data.dto.ExchangeType;
 import com.smartstore.probadores.ui.backend.data.dto.exchange.Root;
+import com.smartstore.probadores.ui.backend.data.entity.Category;
 import com.smartstore.probadores.ui.backend.data.entity.Barcode;
 import com.smartstore.probadores.ui.backend.data.entity.Product;
 import com.smartstore.probadores.ui.backend.data.entity.ProductInFittingRoom;
@@ -66,8 +67,6 @@ public class ProductService {
         con.setRequestMethod("GET");
         con.setRequestProperty("Content-Type", "application/json");
 
-        System.out.println("con.getResponseMessage() = " + con.getResponseMessage());
-
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(con.getInputStream()));
         String inputLine;
@@ -89,4 +88,6 @@ public class ProductService {
 
         return result;
     }
+
+    public List<Product> findByCategoryId(Category categoryId) { return this.productRepository.findByCategoryId(categoryId); }
 }
