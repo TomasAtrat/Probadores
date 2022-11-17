@@ -12,30 +12,23 @@ import com.smartstore.probadores.ui.backend.microservices.task.services.TaskServ
 import com.smartstore.probadores.ui.views.MainLayout;
 import com.smartstore.probadores.ui.views.utils.InMemoryVariables;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.BoxSizing;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
-import com.vaadin.flow.data.renderer.LitRenderer;
-import com.vaadin.flow.data.renderer.Renderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import org.apache.commons.codec.binary.Base64;
-import org.nd4j.linalg.api.ops.impl.reduce.same.Prod;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.SimpleLinearRegression;
@@ -53,7 +46,6 @@ import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -77,7 +69,9 @@ public class SistemadeprobadoresView extends VerticalLayout {
 
     private TextField productDescription;
     private TextField productPrice;
-    private VerticalLayout combinationLayout;
+    private HorizontalLayout combinationAndSimilarProductsLayout;
+    private Grid<Product> similarProductsGrid;
+    private ConfirmDialog confirmDialog;
 
     public static ReaderMaster readerMaster;
 
@@ -115,22 +109,53 @@ public class SistemadeprobadoresView extends VerticalLayout {
 
         board.addRow(carousel, productInfo);
 
-        board.addRow(createCombinationLayout());
+        board.addRow(createCombinationAndSimilarProductsLayout());
 
         add(board);
-        add(GetSimilarities(this.productService.findById(1).get()));
-
-        ExchangeType exchangeType = productService.GetExchangeType(40.0);
-        System.out.println("Pesos uruguayos: " + df.format(exchangeType.getUruguayanPeso()));
-        System.out.println("Pesos argentinos: " + df.format(exchangeType.getArgentinianPeso()));
-        System.out.println("Reales brasileros: " + df.format(exchangeType.getBrazilianReal()));
-        System.out.println("Dólares: " + df.format(exchangeType.getDollar()));
 
         configureReader();
+
+        createSimilarProductsConfirmDialog();
+    }
+
+    public HorizontalLayout createCombinationAndSimilarProductsLayout() {
+
+        combinationAndSimilarProductsLayout = new HorizontalLayout();
+
+        combinationAndSimilarProductsLayout.setVisible(false);
+
+        Button openSimilarProductsModalBtn = new Button("Ver productos similares");
+
+        openSimilarProductsModalBtn.addClickListener(e -> confirmDialog.open());
+
+        VerticalLayout similarProdsLayout = new VerticalLayout(new H4("Productos similares"), openSimilarProductsModalBtn);
+
+        combinationAndSimilarProductsLayout.add(createCombinationLayout(), similarProdsLayout);
+
+        combinationAndSimilarProductsLayout.setAlignItems(Alignment.CENTER);
+
+        return combinationAndSimilarProductsLayout;
+    }
+
+    private void createSimilarProductsConfirmDialog() {
+        confirmDialog = new ConfirmDialog();
+
+        confirmDialog.setWidthFull();
+        confirmDialog.setMaxHeight(500, PIXELS);
+
+        confirmDialog.setHeader("Productos similares");
+
+        confirmDialog.add(createSimilarProductsLayout());
+
+        confirmDialog.setConfirmText("Confirmar");
+
+        confirmDialog.setCancelable(false);
+
+        confirmDialog.setCloseOnEsc(true);
     }
 
     public VerticalLayout createCombinationLayout() {
-        combinationLayout = new VerticalLayout();
+        VerticalLayout combinationLayout = new VerticalLayout();
 
         H4 combinationText = new H4("Combinación sugerida:");
         combinationLayout.add(combinationText);
@@ -138,18 +163,35 @@ public class SistemadeprobadoresView extends VerticalLayout {
         productDescription = new TextField("Descripción:");
         productDescription.setReadOnly(true);
         productDescription.addThemeVariants(TextFieldVariant.LUMO_SMALL);
-        combinationLayout.add(productDescription);
 
         productPrice = new TextField("Precio:");
         productPrice.setReadOnly(true);
         productPrice.addThemeVariants(TextFieldVariant.LUMO_SMALL);
-        combinationLayout.add(productPrice);
 
         combinationLayout.setSpacing(false);
 
-        combinationLayout.setVisible(false);
+        combinationLayout.add(new HorizontalLayout(productDescription, productPrice));
 
         return combinationLayout;
+    }
+
+    public VerticalLayout createSimilarProductsLayout() {
+        VerticalLayout resultDiv = new VerticalLayout();
+
+        similarProductsGrid = new Grid<>(Product.class, false);
+        similarProductsGrid.addColumn(TemplateRenderer
+                .<Product>of("<div><img style='height: auto; max-width: 100%;' src='[[item.imagedata]]' alt='[[item.name]]'/></div>")
+                .withProperty("imagedata", item -> getImageAsBase64(item.getPicture()))
+                .withProperty("name", item -> item.getId())
+        ).setHeader("Imagen");
+
+        similarProductsGrid.addColumn(Product::getDescription).setHeader("Descripción");
+        similarProductsGrid.addColumn(Product::getPrice).setHeader("Precio");
+        similarProductsGrid.setHeight("40px");
+
+        resultDiv.add(similarProductsGrid);
+
+        return resultDiv;
     }
 
     public void getCombinationFromProductSelected(int id) {
@@ -157,7 +199,7 @@ public class SistemadeprobadoresView extends VerticalLayout {
             Product combination = GetCombination(id);
 
             if (combination != null) {
-                combinationLayout.setVisible(true);
+                combinationAndSimilarProductsLayout.setVisible(true);
 
                 productDescription.setValue(combination.getDescription() != null ? combination.getDescription() : "No disponible");
 
@@ -247,6 +289,7 @@ public class SistemadeprobadoresView extends VerticalLayout {
                 setupExchange(e.getValue().getPrice().doubleValue());
                 updateDifferentColoursAndSizes(e.getValue());
                 getCombinationFromProductSelected(e.getValue().getIntegerId());
+                getSimilarities(e.getValue());
             }
         });
     }
@@ -263,6 +306,8 @@ public class SistemadeprobadoresView extends VerticalLayout {
     public static void setProductsToCombobox(List<Product> products) {
         productComboBox.setItems(products);
         productComboBox.setItemLabelGenerator(i -> i.getId() + " - " + i.getDescription());
+
+        addImages(products.stream().map(Product::getPicture).toList());
     }
 
     public static void addImages(List<byte[]> images) {
@@ -276,11 +321,11 @@ public class SistemadeprobadoresView extends VerticalLayout {
             slides.add(slideImg);
         }
 
-        carousel.setSlides((slides.toArray(new Slide[slides.size()])));
+        carousel.setSlides((slides.toArray(new Slide[0])));
 
-        carousel.withAutoProgress();
-        carousel.withSlideDuration(2);
-        carousel.withStartPosition(1);
+        carousel.setStartPosition(0);
+        carousel.setAutoProgress(true);
+        carousel.setSlideDuration(2);
 
         carousel.setWidthFull();
     }
@@ -291,7 +336,7 @@ public class SistemadeprobadoresView extends VerticalLayout {
         d.setBoxSizing(BoxSizing.CONTENT_BOX);
         d.setMaxHeight(MAX_HEIGHT, PIXELS);
 
-        String url = "data:" + "image/jpeg" + ";base64," + Base64.encodeBase64String(img);
+        String url = "data:" + "image/jpeg" + ";base64," + Base64.getEncoder().encodeToString((img));
         Image image = new Image(url, "");
         image.setMaxHeight(MAX_HEIGHT, PIXELS);
         image.setMaxWidth(700, PIXELS);
@@ -312,31 +357,18 @@ public class SistemadeprobadoresView extends VerticalLayout {
         }
     }
 
-    public VerticalLayout GetSimilarities(Product product) {
-        VerticalLayout resultDiv = new VerticalLayout();
-
+    public void getSimilarities(Product product) {
         List<Product> similarProducts = this.productService.findByCategoryId(product.getCategoryId());
         similarProducts.removeIf(similarProduct -> Objects.equals(similarProduct.getId(), product.getId()));
 
-        Grid<Product> grid = new Grid<>(Product.class, false);
-        grid.addColumn(TemplateRenderer
-                .<Product>of("<div><img style='height: auto; max-width: 100%;' src='[[item.imagedata]]' alt='[[item.name]]'/></div>")
-                .withProperty("imagedata", item -> getImageAsBase64(item.getPicture()))
-                .withProperty("name", item -> item.getId())
-        ).setHeader("Imágen");
-        grid.addColumn(Product::getDescription).setHeader("Descripción");
-        grid.addColumn(Product::getPrice).setHeader("Precio");
-        grid.setItems(similarProducts);
-        grid.setHeight("40px");
-
-        resultDiv.add(new Text("Productos similares:"), grid);
-
-        return resultDiv;
+        similarProductsGrid.setItems(similarProducts);
     }
 
     private String getImageAsBase64(byte[] string) {
         String mimeType = "image/png";
-        return "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(string);
+        if (string != null)
+            return "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(string);
+        return null;
     }
 
     public Product GetCombination(int productId) throws Exception {
