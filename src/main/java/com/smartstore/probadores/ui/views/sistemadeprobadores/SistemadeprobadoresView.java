@@ -70,7 +70,7 @@ public class SistemadeprobadoresView extends VerticalLayout {
     private TextField productDescription;
     private TextField productPrice;
     private HorizontalLayout combinationAndSimilarProductsLayout;
-    private Grid<Product> similarProductsGrid;
+    private static Grid<Product> similarProductsGrid;
     private ConfirmDialog confirmDialog;
 
     public static ReaderMaster readerMaster;
@@ -114,8 +114,6 @@ public class SistemadeprobadoresView extends VerticalLayout {
         add(board);
 
         configureReader();
-
-        createSimilarProductsConfirmDialog();
     }
 
     public HorizontalLayout createCombinationAndSimilarProductsLayout() {
@@ -126,7 +124,10 @@ public class SistemadeprobadoresView extends VerticalLayout {
 
         Button openSimilarProductsModalBtn = new Button("Ver productos similares");
 
-        openSimilarProductsModalBtn.addClickListener(e -> confirmDialog.open());
+        openSimilarProductsModalBtn.addClickListener(e -> {
+            createSimilarProductsConfirmDialog(productComboBox.getValue());
+            confirmDialog.open();
+        });
 
         VerticalLayout similarProdsLayout = new VerticalLayout(new H4("Productos similares"), openSimilarProductsModalBtn);
 
@@ -137,7 +138,7 @@ public class SistemadeprobadoresView extends VerticalLayout {
         return combinationAndSimilarProductsLayout;
     }
 
-    private void createSimilarProductsConfirmDialog() {
+    private void createSimilarProductsConfirmDialog(Product product) {
         confirmDialog = new ConfirmDialog();
 
         confirmDialog.setWidthFull();
@@ -145,7 +146,9 @@ public class SistemadeprobadoresView extends VerticalLayout {
 
         confirmDialog.setHeader("Productos similares");
 
-        confirmDialog.add(createSimilarProductsLayout());
+        var similarities = getSimilarities(product);
+
+        confirmDialog.add(createSimilarProductsLayout(similarities));
 
         confirmDialog.setConfirmText("Confirmar");
 
@@ -175,21 +178,25 @@ public class SistemadeprobadoresView extends VerticalLayout {
         return combinationLayout;
     }
 
-    public VerticalLayout createSimilarProductsLayout() {
+    public VerticalLayout createSimilarProductsLayout(List<Product> similarities) {
         VerticalLayout resultDiv = new VerticalLayout();
 
         similarProductsGrid = new Grid<>(Product.class, false);
         similarProductsGrid.addColumn(TemplateRenderer
-                .<Product>of("<div><img style='height: auto; max-width: 100%;' src='[[item.imagedata]]' alt='[[item.name]]'/></div>")
+                .<Product>of("<div><img style='height: auto; max-width: 100%; max-height: 100px;' src='[[item.imagedata]]' alt='[[item.name]]'/></div>")
                 .withProperty("imagedata", item -> getImageAsBase64(item.getPicture()))
                 .withProperty("name", item -> item.getId())
         ).setHeader("Imagen");
 
         similarProductsGrid.addColumn(Product::getDescription).setHeader("Descripción");
-        similarProductsGrid.addColumn(Product::getPrice).setHeader("Precio");
-        similarProductsGrid.setHeight("40px");
+        similarProductsGrid.addColumn(Product::getPrice).setHeader("Precio ($UYU)");
+        similarProductsGrid.setHeight("400px");
 
         resultDiv.add(similarProductsGrid);
+
+        System.out.println("similarities.size() = " + similarities.size());
+
+        similarProductsGrid.setItems(similarities);
 
         return resultDiv;
     }
@@ -289,7 +296,6 @@ public class SistemadeprobadoresView extends VerticalLayout {
                 setupExchange(e.getValue().getPrice().doubleValue());
                 updateDifferentColoursAndSizes(e.getValue());
                 getCombinationFromProductSelected(e.getValue().getIntegerId());
-                getSimilarities(e.getValue());
             }
         });
     }
@@ -357,18 +363,18 @@ public class SistemadeprobadoresView extends VerticalLayout {
         }
     }
 
-    public void getSimilarities(Product product) {
+    public List<Product> getSimilarities(Product product) {
         List<Product> similarProducts = this.productService.findByCategoryId(product.getCategoryId());
         similarProducts.removeIf(similarProduct -> Objects.equals(similarProduct.getId(), product.getId()));
 
-        similarProductsGrid.setItems(similarProducts);
+        return similarProducts;
     }
 
     private String getImageAsBase64(byte[] string) {
         String mimeType = "image/png";
         if (string != null)
             return "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(string);
-        return null;
+        return "";
     }
 
     public Product GetCombination(int productId) throws Exception {
