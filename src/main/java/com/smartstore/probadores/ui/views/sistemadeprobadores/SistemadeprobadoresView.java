@@ -14,6 +14,7 @@ import com.smartstore.probadores.ui.views.utils.InMemoryVariables;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.board.Board;
+import com.vaadin.flow.component.board.Row;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -44,10 +45,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static com.vaadin.flow.component.Unit.PIXELS;
 
@@ -66,6 +64,9 @@ public class SistemadeprobadoresView extends VerticalLayout {
     public static TextField brazilianRealTxt;
     public static TextField argentinianPesoTxt;
     public static TextField americanDollarTxt;
+    public static Row carouselRow;
+    public static UI ui;
+
 
     private TextField productDescription;
     private TextField productPrice;
@@ -107,7 +108,7 @@ public class SistemadeprobadoresView extends VerticalLayout {
 
         HorizontalLayout productInfo = new HorizontalLayout(mainLayout, exchangeLayout);
 
-        board.addRow(carousel, productInfo);
+        carouselRow = board.addRow(carousel, productInfo);
 
         board.addRow(createCombinationAndSimilarProductsLayout());
 
@@ -136,6 +137,10 @@ public class SistemadeprobadoresView extends VerticalLayout {
         combinationAndSimilarProductsLayout.setAlignItems(Alignment.CENTER);
 
         return combinationAndSimilarProductsLayout;
+    }
+
+    public static UI getLayoutUI(){
+         return carousel.getUI().get();
     }
 
     private void createSimilarProductsConfirmDialog(Product product) {
@@ -180,7 +185,6 @@ public class SistemadeprobadoresView extends VerticalLayout {
 
     public VerticalLayout createSimilarProductsLayout(List<Product> similarities) {
         VerticalLayout resultDiv = new VerticalLayout();
-
         similarProductsGrid = new Grid<>(Product.class, false);
         similarProductsGrid.addColumn(TemplateRenderer
                 .<Product>of("<div><img style='height: auto; max-width: 100%; max-height: 100px;' src='[[item.imagedata]]' alt='[[item.name]]'/></div>")
@@ -319,6 +323,7 @@ public class SistemadeprobadoresView extends VerticalLayout {
     public static void addImages(List<byte[]> images) {
         System.out.println("images.size() = " + images.size());
 
+        carouselRow.remove(carouselRow.getComponentAt(0));
         carousel.setHideNavigation(false);
 
         List<Slide> slides = new ArrayList<>();
@@ -329,11 +334,12 @@ public class SistemadeprobadoresView extends VerticalLayout {
 
         carousel.setSlides((slides.toArray(new Slide[0])));
 
-        carousel.setStartPosition(0);
-        carousel.setAutoProgress(true);
-        carousel.setSlideDuration(2);
-
+        carousel.withAutoProgress();
+        carousel.withSlideDuration(3);
+        carousel.withStartPosition(0);
+        carousel.withoutSwipe();
         carousel.setWidthFull();
+        carouselRow.addComponentAtIndex(0, carousel);
     }
 
     public static Component createSlideContent(byte[] img) {
